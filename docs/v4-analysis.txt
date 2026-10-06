@@ -1,0 +1,14 @@
+KONSENSUS PROJESİ v4 — SECURITY/ARCHITECTURE ANALYSIS
+
+Priority order:
+1. Consensus + cross-color atomicity
+2. Sybil + validator centralization resistance
+3. Real ML-DSA benchmark
+4. Network stress and Byzantine testing
+5. Scale from 2 colors to 4/8/16/32/60
+
+The v4 review identifies cross-color atomicity, fast-confirmation semantics, Sybil resistance, prover centralization, zero-fee spam, network latency, and mobile bandwidth/energy as the main engineering risks.
+
+Performance must be reported as sustained finalized TPS together with transaction size, cross-color ratio, validator participation, and P50/P95/P99 latency/finality.
+
+The first implementation target should be a small 2-color prototype with real committee/finality rules before scaling.
