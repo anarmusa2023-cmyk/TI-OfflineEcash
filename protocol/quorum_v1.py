@@ -50,6 +50,18 @@ class QuorumCertificate:
 class QuorumError(ValueError):
     pass
 
+class VoteGuard:
+    """Stateful validator rule: never sign two digests for one slot."""
+    def __init__(self):
+        self._signed: dict[tuple[int, bytes, int], bytes] = {}
+
+    def check_and_record(self, epoch: int, instance: bytes, round_no: int, digest: bytes) -> None:
+        key = (epoch, instance, round_no)
+        previous = self._signed.get(key)
+        if previous is not None and previous != digest:
+            raise QuorumError("equivocation: validator already voted for another digest")
+        self._signed[key] = digest
+
 def verify_certificate(qc: QuorumCertificate, committee_keys: Mapping[str, bytes], f: int) -> bool:
     n = len(committee_keys)
     q = quorum_size(n, f)
@@ -69,7 +81,9 @@ def verify_certificate(qc: QuorumCertificate, committee_keys: Mapping[str, bytes
             return False
     return True
 
-def make_vote(signer: str, private_key, epoch: int, instance: bytes, round_no: int, digest: bytes) -> Vote:
+def make_vote(signer: str, private_key, epoch: int, instance: bytes, round_no: int, digest: bytes, guard: VoteGuard | None = None) -> Vote:
+    if guard is not None:
+        guard.check_and_record(epoch, instance, round_no, digest)
     return Vote(signer, epoch, instance, round_no, digest,
                 private_key.sign(_message(epoch, instance, round_no, digest)))
 
